@@ -119,6 +119,47 @@
   }
 
   /* ---------- 一张问题卡 ---------- */
+  /* ---------- 点赞 / 同问 ---------- */
+  function likeKey(kind, id) { return 'b8.q.' + kind + '.' + id; }
+
+  function liked(kind, id) {
+    try { return localStorage.getItem(likeKey(kind, id)) === '1'; } catch (e) { return false; }
+  }
+
+  function markLiked(kind, id) {
+    try { localStorage.setItem(likeKey(kind, id), '1'); } catch (e) {}
+  }
+
+  function reactBtn(kind, item, iconOn, iconOff, cls) {
+    var btn = h('button', 'q-react' + (cls ? ' ' + cls : ''));
+    btn.type = 'button';
+    btn.setAttribute('data-act', kind);
+    var here = liked(kind, item.id);
+    if (here || isDemo) btn.disabled = true;
+    if (here) btn.classList.add('is-on');
+
+    btn.appendChild(h('span', 'q-react-icon', here ? iconOn : iconOff));
+    var num = h('span', 'q-react-num', String(item[kind === 'answer' ? 'answer_likes' : kind === 'same' ? 'same_count' : 'likes'] || 0));
+    btn.appendChild(num);
+
+    B8.on(btn, 'click', function () {
+      btn.disabled = true;
+      B8.sb.rpc('b8_question_like', { p_token: B8.auth.token(), p_id: item.id, p_kind: kind })
+        .then(function (n) {
+          num.textContent = String(n == null ? num.textContent : n);
+          btn.classList.add('is-on');
+          btn.querySelector('.q-react-icon').textContent = iconOn;
+          markLiked(kind, item.id);
+          if (kind === 'same') B8.toast('已同问 +1');
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          B8.toast(errMessage(err));
+        });
+    });
+
+    return btn;
+  }
   function buildCard(item) {
     var answered = isAnswered(item);
     var card = h('article', 'q-card' + (answered ? ' is-answered' : ''));
@@ -154,6 +195,11 @@
       card.appendChild(answer);
     }
 
+    var actions = h('div', 'q-actions');
+    actions.appendChild(reactBtn('question', item, '♥', '♡'));
+    actions.appendChild(reactBtn('same', item, '已同问', '同问', 'is-same'));
+    if (answered) actions.appendChild(reactBtn('answer', item, '有用 ♥', '有用'));
+    card.appendChild(actions);
     if (isAdmin) {
       var foot = h('div', 'q-foot');
       var acts = h('div', 'admin-actions');
@@ -438,6 +484,13 @@
   setAnon(true, false);
   syncCount();
 
+  // 提权（输密钥）之后 isAdmin 才会变 true，必须重画一次，
+  // 否则「回答」按钮永远不出现——这就是之前点不了回答的原因。
+  document.addEventListener('b8:auth', function () {
+    var was = isAdmin;
+    isAdmin = B8.auth.isAdmin();
+    if (was !== isAdmin) renderAll();
+  });
   B8.auth.ready(function (st) {
     if (!st || st.kind === 'none') return;
     if (st.kind === 'preview' || !B8.sb.ready) startDemo();

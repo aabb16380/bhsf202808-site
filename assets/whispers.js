@@ -580,6 +580,16 @@
   setAnon(true, false);
   syncCount();
 
+  // 提权后要把管理员按钮画出来（之前只在初始化时判断一次）
+  document.addEventListener('b8:auth', function () {
+    var wasBoss = isAdmin, wasSuper = isSuper;
+    isAdmin = B8.auth.isAdmin();
+    isSuper = B8.auth.isSuper();
+    if (wasBoss !== isAdmin || wasSuper !== isSuper) {
+      renderAll();
+      if (isSuper) loadSenders();
+    }
+  });
   B8.auth.ready(function (st) {
     if (!st || st.kind === 'none') return;
     if (st.kind === 'preview' || !B8.sb.ready) startDemo();

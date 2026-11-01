@@ -1429,3 +1429,60 @@ body[data-mode="night"] .whisper {
   border-left: 2px solid color-mix(in srgb, var(--gold) 55%, transparent);
   border-radius: 2px;
 }
+/* ---------- 提问箱的赞 / 同问 ---------- */
+.q-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.q-react {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--ink-3);
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.q-react:hover { color: var(--ink); border-color: var(--ink-2); }
+
+.q-react.is-on {
+  color: var(--seal);
+  border-color: color-mix(in srgb, var(--seal) 45%, transparent);
+  background: var(--seal-soft);
+}
+
+.q-react.is-same { font-family: var(--serif); letter-spacing: 0.04em; }
+.q-react-icon { line-height: 1; }
+.q-react-num { font-family: var(--mono); font-size: 11.5px; }
+
+/* ---------- 控制台：临时密码提示条 ---------- */
+.console-temp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--ink-2);
+  background: var(--jade-soft);
+  border: 1px dashed color-mix(in srgb, var(--jade) 45%, transparent);
+  border-radius: var(--radius);
+}
+
+.console-temp code {
+  padding: 2px 8px;
+  font-family: var(--mono);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  background: var(--card);
+  border-radius: 3px;
+}
