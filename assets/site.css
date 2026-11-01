@@ -1555,3 +1555,8 @@ body[data-mode="night"] .whisper {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+/* ---------- 列表默认只露 3 条 ---------- */
+.list-more {
+  display: block;
+  margin: 16px 0 0;
+}

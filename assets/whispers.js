@@ -27,6 +27,9 @@
   if (!list || !form) return;
 
   var items = [];
+  var LIST_LIMIT = 3;      // 默认只露 3 条，剩下的点「展开全部」
+  var showAll = false;
+  var moreBtn = null;
   var isDemo = false;
   var isAdmin = false;
   var isSuper = false;
@@ -223,21 +226,46 @@
     return n;
   }
 
+  /** 列表默认只露 3 条，剩下的用这个按钮展开 */
+  function updateMore() {
+    if (!list) return;
+    var need = items.length > LIST_LIMIT;
+    if (!need) {
+      if (moreBtn) moreBtn.hidden = true;
+      return;
+    }
+    if (!moreBtn) {
+      moreBtn = document.createElement('button');
+      moreBtn.type = 'button';
+      moreBtn.className = 'btn ghost sm list-more';
+      if (list.parentNode) list.parentNode.insertBefore(moreBtn, list.nextSibling);
+      B8.on(moreBtn, 'click', function () {
+        showAll = !showAll;
+        renderAll();
+      });
+    }
+    moreBtn.hidden = false;
+    moreBtn.textContent = showAll ? '收起' : ('展开全部（' + items.length + ' 条）');
+  }
+
   function renderAll() {
     clear(list);
     sortItems(items);
+
+    var shown = showAll ? items : items.slice(0, LIST_LIMIT);
 
     if (!items.length) {
       var empty = h('p', 'empty-note', '洞里还没有人开口。第一句可以是你。');
       list.appendChild(empty);
     } else {
       var frag = document.createDocumentFragment();
-      for (var i = 0; i < items.length; i++) frag.appendChild(buildCard(items[i]));
+      for (var i = 0; i < shown.length; i++) frag.appendChild(buildCard(shown[i]));
       list.appendChild(frag);
     }
 
     // 条数多了就别把页面撑长：超出 6 条改成内部滑动
-    if (list) list.classList.toggle('is-scroll', items.length > 6);
+    if (list) list.classList.toggle('is-scroll', showAll && items.length > 6);
+    updateMore();
     list.setAttribute('aria-busy', 'false');
     updateStat();
   }
@@ -397,7 +425,8 @@
     }, function (err) {
       clear(list);
       // 条数多了就别把页面撑长：超出 6 条改成内部滑动
-    if (list) list.classList.toggle('is-scroll', items.length > 6);
+    if (list) list.classList.toggle('is-scroll', showAll && items.length > 6);
+    updateMore();
     list.setAttribute('aria-busy', 'false');
       var msg = errMessage(err);
       list.appendChild(h('p', 'list-error', '悄悄话没读出来：' + msg));
