@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-mode="night">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>八班树洞 · 北京四中 2028 届 8 班 · bhsf202808.site</title>
+<meta name="description" content="北京四中 2028 届 8 班的树洞：悄悄话、提问箱，以及写给未来的时光胶囊。只对八班开放。">
+<link rel="canonical" href="https://bhsf202808.site/">
+<meta name="theme-color" content="#14141a">
+<meta name="color-scheme" content="dark light">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="八班树洞">
+<meta property="og:title" content="八班树洞 · 北京四中 2028 届 8 班">
+<meta property="og:description" content="有些话白天说不出口。写在这里，署名随意，反正树洞不会说。">
+<meta property="og:url" content="https://bhsf202808.site/">
+<meta property="og:locale" content="zh_CN">
+
+<link rel="icon" href="assets/favicon.png?v=20261101a1" type="image/png">
+<link rel="apple-touch-icon" href="assets/icon.png?v=20261101a1">
+<script>
+// 在样式表之前定下夜色/日间，避免先刷出一帧错误的底色。
+// localStorage 可能被禁，失败就按默认的夜色来。
+(function () {
+  var mode = 'night';
+  try { if (localStorage.getItem('b8.mode') === 'day') mode = 'day'; } catch (e) {}
+  document.documentElement.setAttribute('data-mode', mode);
+  window.B8_MODE = mode;
+})();
+window.B8_BUILD = '20261101a1';
+// ?t=<时间戳> 透传给每个资源，配合 /test/ 入口绕过 GitHub Pages 的缓存
+window.B8_T = (function () {
+  var m = (location.search || '').match(/[?&]t=([^&]+)/);
+  return m ? '&t=' + encodeURIComponent(m[1]) : '';
+})();
+window.B8_TEST = !!window.B8_T;
+document.write('<link rel="stylesheet" href="assets/styles.css?v=20261101a1' + window.B8_T + '">');
+</script>
+<style>
+  /* 样式表到达前只给画布上底色，杜绝白闪 */
+  html { background: #14141a; color-scheme: dark; }
+  html[data-mode="day"] { background: #f4f1ea; color-scheme: light; }
+</style>
+<script>document.documentElement.classList.add('js');</script>
+</head>
+
+<body data-site="site" data-mode="night" id="top">
+<script>
+// head 里已经做了选择；这里在正文出现前同步到 body，避免日间用户看见一帧夜色。
+document.body.setAttribute('data-mode', window.B8_MODE || 'night');
+</script>
+
+<a class="skip-link" href="#main">跳到主要内容</a>
+
+<header class="site-header" id="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="#top" aria-label="八班树洞 · 回到顶部">
+      <img class="brand-mark" src="assets/icon.png?v=20261101a1" alt="" width="30" height="30">
+      <span class="brand-text">
+        <span class="brand-name">八班树洞</span>
+        <span class="brand-ver" id="brand-ver">v1.0</span>
+      </span>
+    </a>
+
+    <nav class="nav" id="nav" aria-label="主导航">
+      <a href="#whispers">悄悄话</a>
+      <a href="#questions">提问箱</a>
+      <a href="#capsules">时光胶囊</a>
+      <a href="https://bhsf202808.homes/">纪事 ↗</a>
+    </nav>
+
+    <div class="header-tools">
+      <button class="mode-btn" id="mode-toggle" type="button" aria-label="切换日间 / 夜色" title="切换日间 / 夜色">
+        <span class="mode-opt mode-opt-day" aria-hidden="true">日</span>
+        <span class="mode-slash" aria-hidden="true">/</span>
+        <span class="mode-opt mode-opt-night" aria-hidden="true">夜</span>
+      </button>
+      <button class="icon-btn nav-toggle" id="nav-toggle" type="button"
+              aria-label="打开菜单" aria-expanded="false" aria-controls="nav">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="build-banner" id="build-banner" hidden>
+  <span class="build-test">TEST</span> 调试模式 · 所有资源都已绕过缓存
+</div>
+
+<!-- 登录门：DOM 与 BUILD-SPEC §6 一致，auth.js 自动接管。
+     放在 #main 外面，免得被未登录时的模糊样式一起糊掉。 -->
+<div class="gate" id="gate" hidden>
+  <div class="gate-card">
+    <div class="gate-seal" aria-hidden="true">八</div>
+    <h2>八班树洞</h2>
+    <p class="gate-sub">这里只对八班开放。输入班级口令，第一次进来给自己取个名字。</p>
+    <form id="gate-form" novalidate>
+      <div class="field">
+        <label for="gate-nick">你的称呼（可留空）</label>
+        <input class="input" id="gate-nick" maxlength="16" placeholder="比如：后排靠窗" autocomplete="nickname">
+      </div>
+      <div class="field" style="margin-top:12px">
+        <label for="gate-secret">班级口令</label>
+        <input class="input" id="gate-secret" type="password" placeholder="问班委要" autocomplete="current-password">
+      </div>
+      <button class="btn seal" id="gate-submit" type="submit">进入</button>
+      <p class="gate-err" id="gate-err" role="alert"></p>
+    </form>
+    <p class="gate-hint" id="gate-hint" hidden></p>
+    <button class="btn ghost" id="gate-preview" type="button" hidden>先看看界面</button>
+    <p class="gate-foot">口令只存在你自己的浏览器里，30 天有效。</p>
+  </div>
+</div>
+
+<main id="main" inert>
+
+  <!-- ============ 首屏：树洞的夜 ============ -->
+  <section class="hero" id="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-body">
+        <p class="eyebrow">bhsf202808.site · 树洞</p>
+        <h1>八班树洞</h1>
+        <span class="hero-en">Class Eight · The Hollow</span>
+        <p class="lead">有些话白天说不出口。写在这里，署名随意，反正树洞不会说。</p>
+
+        <div class="hero-actions">
+          <a class="btn" href="#whispers">写一条悄悄话</a>
+          <a class="btn ghost" href="#questions">往提问箱里投个问题</a>
+        </div>
+
+        <dl class="stat-strip">
+          <div class="stat"><dt>悄悄话</dt><dd><span id="stat-whispers">—</span></dd></div>
+          <div class="stat"><dt>提问</dt><dd><span id="stat-questions">—</span></dd></div>
+          <div class="stat"><dt>时光胶囊</dt><dd><span id="stat-capsules">—</span></dd></div>
+          <div class="stat"><dt>本站</dt><dd>需班级口令</dd></div>
+        </dl>
+      </div>
+
+      <div class="hero-aside" aria-hidden="true">
+        <div class="hero-orbit">
+          <span class="hero-orbit-dot"></span>
+          <span class="hero-orbit-text">树洞</span>
+        </div>
+        <span class="hero-aside-meta">BHSF · CLASS 08 · 2028</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 01 悄悄话 ============ -->
+  <section class="section" id="whispers">
+    <div class="wrap">
+      <header class="sec-head reveal">
+        <span class="sec-idx">01 / WHISPERS</span>
+        <h2>悄悄话</h2>
+        <p class="sec-sub">不想署名就匿名。说完就放在这儿，不用等一个回答。</p>
+      </header>
+
+      <div class="whisper-layout">
+        <div class="write-column">
+          <form class="write-card" id="whisper-form" novalidate>
+            <div class="write-head">
+              <h3>写一条</h3>
+              <span class="write-tip">一千字以内</span>
+            </div>
+
+            <div class="field">
+              <label for="whisper-body">想说的话</label>
+              <textarea class="textarea" id="whisper-body" maxlength="1000" rows="6"
+                        placeholder="不用组织语言，想到什么就写什么。"></textarea>
+              <div class="input-meta">
+                <span class="form-note">发出去之后，自己就改不了了。</span>
+                <span class="char-count"><span id="whisper-count">0</span> / 1000</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <span class="field-label">怎么署名</span>
+              <div class="seg" id="whisper-mode" role="group" aria-label="悄悄话署名方式">
+                <button class="seg-btn" type="button" data-anon="true" aria-pressed="true">匿名</button>
+                <button class="seg-btn" type="button" data-anon="false" aria-pressed="false">署名</button>
+              </div>
+            </div>
+
+            <div class="field" id="whisper-nick-field" hidden>
+              <label for="whisper-nick">署名</label>
+              <input class="input" id="whisper-nick" maxlength="16" placeholder="留空就用登录时的称呼"
+                     autocomplete="nickname">
+            </div>
+
+            <div class="form-foot write-foot">
+              <button class="btn seal" id="whisper-submit" type="submit" disabled>放进树洞</button>
+              <span class="form-status" id="whisper-status" role="status" aria-live="polite"></span>
+            </div>
+          </form>
+        </div>
+
+        <div class="feed-column">
+          <div class="feed-toolbar">
+            <h3 class="feed-title">洞里的话</h3>
+            <button class="btn ghost sm" id="whisper-random" type="button">随便抽一条</button>
+          </div>
+
+          <div class="whisper-list" id="whisper-list" aria-live="polite" aria-busy="true">
+            <div class="sk-card"><div class="skeleton sk-line w30"></div><div class="skeleton sk-line"></div><div class="skeleton sk-line w60"></div></div>
+            <div class="sk-card"><div class="skeleton sk-line w40"></div><div class="skeleton sk-line"></div><div class="skeleton sk-line w50"></div></div>
+          </div>
+
+          <p class="demo-note" id="whisper-demo-note" hidden>数据库还没接：先跑 <code>supabase/schema.sql</code>，再把 URL 和 anon key 填进 <code>assets/site-config.js</code></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 提问箱 ============ -->
+  <section class="section section-alt" id="questions">
+    <div class="wrap">
+      <header class="sec-head reveal">
+        <span class="sec-idx">02 / QUESTIONS</span>
+        <h2>提问箱</h2>
+        <p class="sec-sub">有想问的，投进来。答不答、什么时候答，得看箱子的主人。</p>
+      </header>
+
+      <form class="ask-card" id="ask-form" novalidate>
+        <div class="ask-main">
+          <div class="field">
+            <label for="ask-body">问题</label>
+            <textarea class="textarea" id="ask-body" maxlength="1000" rows="4"
+                      placeholder="问得具体一点，比较容易得到一个具体的答案。"></textarea>
+            <div class="input-meta">
+              <span class="form-note">两个汉字起，一千字以内。</span>
+              <span class="char-count"><span id="ask-count">0</span> / 1000</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ask-side">
+          <div class="field">
+            <span class="field-label">怎么落款</span>
+            <div class="seg" id="ask-mode" role="group" aria-label="提问署名方式">
+              <button class="seg-btn" type="button" data-anon="true" aria-pressed="true">匿名</button>
+              <button class="seg-btn" type="button" data-anon="false" aria-pressed="false">实名</button>
+            </div>
+          </div>
+
+          <div class="field" id="ask-nick-field" hidden>
+            <label for="ask-nick">署名</label>
+            <input class="input" id="ask-nick" maxlength="16" placeholder="留空就用登录时的称呼"
+                   autocomplete="nickname">
+          </div>
+
+          <button class="btn seal ask-submit" id="ask-submit" type="submit" disabled>投进提问箱</button>
+          <span class="form-status" id="ask-status" role="status" aria-live="polite"></span>
+          <p class="form-note ask-note">问题会公开显示，署名跟着问题一起留下。</p>
+        </div>
+      </form>
+
+      <div class="wall-head">
+        <h3>箱子里的问题</h3>
+        <p class="wall-sub">待回答的排在前面。</p>
+      </div>
+
+      <div class="q-list" id="question-list" aria-live="polite" aria-busy="true">
+        <div class="sk-card"><div class="skeleton sk-line w40"></div><div class="skeleton sk-line"></div><div class="skeleton sk-line w70"></div></div>
+        <div class="sk-card"><div class="skeleton sk-line w30"></div><div class="skeleton sk-line"></div></div>
+      </div>
+
+      <p class="demo-note" id="question-demo-note" hidden>数据库还没接：先跑 <code>supabase/schema.sql</code>，再把 URL 和 anon key 填进 <code>assets/site-config.js</code></p>
+    </div>
+  </section>
+
+  <!-- ============ 03 时光胶囊 ============ -->
+  <section class="section" id="capsules">
+    <div class="wrap">
+      <header class="sec-head reveal">
+        <span class="sec-idx">03 / CAPSULES</span>
+        <h2>时光胶囊</h2>
+        <p class="sec-sub">写给以后的某一天。日子到了，字才会自己出现。</p>
+      </header>
+
+      <form class="capsule-form" id="capsule-form" novalidate>
+        <div class="cap-row">
+          <div class="field">
+            <label for="cap-title">标题（可以空着）</label>
+            <input class="input" id="cap-title" maxlength="40" placeholder="不写的话，就叫「无题」">
+          </div>
+          <div class="field">
+            <label for="cap-date">哪一天打开</label>
+            <input class="input" id="cap-date" type="date" value="2028-06-09">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="cap-body">写点什么</label>
+          <textarea class="textarea" id="cap-body" maxlength="4000" rows="7"
+                    placeholder="给那天的自己，或者那天的八班。"></textarea>
+          <div class="input-meta">
+            <span class="form-note">封上之后，在开启日期之前谁也看不到正文——包括你自己。</span>
+            <span class="char-count"><span id="cap-count">0</span> / 4000</span>
+          </div>
+        </div>
+
+        <div class="cap-foot">
+          <label class="switch" for="cap-anon">
+            <input type="checkbox" id="cap-anon">
+            <span class="switch-track" aria-hidden="true"></span>
+            <span class="switch-text">匿名封存</span>
+          </label>
+          <div class="cap-actions">
+            <button class="btn seal" id="cap-submit" type="submit" disabled>封存这颗胶囊</button>
+            <span class="form-status" id="cap-status" role="status" aria-live="polite"></span>
+          </div>
+        </div>
+      </form>
+
+      <div class="wall-head">
+        <h3>胶囊墙</h3>
+        <p class="wall-sub" id="cap-wall-meta">等着被打开的信。</p>
+      </div>
+
+      <div class="capsule-wall" id="capsule-wall" aria-live="polite" aria-busy="true">
+        <div class="sk-card"><div class="skeleton sk-line w40"></div><div class="skeleton sk-line w60"></div></div>
+        <div class="sk-card"><div class="skeleton sk-line w30"></div><div class="skeleton sk-line"></div></div>
+      </div>
+
+      <p class="demo-note" id="capsule-demo-note" hidden>数据库还没接：先跑 <code>supabase/schema.sql</code>，再把 URL 和 anon key 填进 <code>assets/site-config.js</code></p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer" id="page-footer" inert>
+  <div class="wrap footer-inner">
+    <div>
+      <p class="footer-motto">八班树洞</p>
+      <p class="footer-copy">© <span id="year">2026</span> 北京四中 2028 届 8 班 · 由 GitHub Pages 托管</p>
+    </div>
+    <nav class="footer-links" aria-label="站外与账户">
+      <a href="https://bhsf202808.homes/">八班纪事 ↗</a>
+      <a href="https://bhsf202808.fun/">八班游乐场 ↗</a>
+      <a href="test/">调试入口</a>
+      <button class="footer-link-btn" id="signout-btn" type="button" hidden>退出登录</button>
+    </nav>
+  </div>
+</footer>
+
+<!-- 页头夜间切换 + 退出登录。auth.js 只在部分启动路径里绑定退出按钮，
+     所以这里独立处理，避免“这次登录后点退出没反应”。 -->
+<script>
+(function () {
+  var body = document.body;
+  var toggle = document.getElementById('mode-toggle');
+  var themeMeta = document.querySelector('meta[name="theme-color"]');
+
+  function applyMode(mode, persist) {
+    if (mode !== 'day') mode = 'night';
+    body.setAttribute('data-mode', mode);
+    document.documentElement.setAttribute('data-mode', mode);
+    if (themeMeta) themeMeta.setAttribute('content', mode === 'day' ? '#f4f1ea' : '#14141a');
+    if (toggle) {
+      toggle.setAttribute('aria-pressed', mode === 'night' ? 'true' : 'false');
+      toggle.setAttribute('aria-label', mode === 'night' ? '切换到日间模式' : '切换到夜色模式');
+      toggle.title = mode === 'night' ? '切换到日间模式' : '切换到夜色模式';
+    }
+    if (persist) {
+      try { localStorage.setItem('b8.mode', mode); } catch (e) {}
+    }
+  }
+
+  applyMode(window.B8_MODE || body.getAttribute('data-mode'), false);
+
+  if (toggle) {
+    toggle.addEventListener('click', function () {
+      applyMode(body.getAttribute('data-mode') === 'night' ? 'day' : 'night', true);
+    });
+  }
+
+  function unlockShell() {
+    var main = document.getElementById('main');
+    var footer = document.getElementById('page-footer');
+    if (main) main.removeAttribute('inert');
+    if (footer) footer.removeAttribute('inert');
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var out = document.getElementById('signout-btn');
+    if (out) {
+      out.addEventListener('click', function () {
+        if (window.B8 && B8.auth && B8.auth.logout) B8.auth.logout();
+        else location.reload();
+      });
+    }
+
+    if (!window.B8 || !B8.auth) { unlockShell(); return; }
+
+    B8.auth.ready(function (st) {
+      unlockShell();
+      // 预览不是真的登录，别给一个会让人误解的「退出登录」。
+      if (st && (st.kind === 'class' || st.kind === 'admin') && out) out.hidden = false;
+    });
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var T = window.B8_T || '';
+  var V = '?v=20261101a1' + T;
+  var list = [
+    ['assets/site-config.js', 0],
+    ['assets/main.js', 1],
+    ['assets/sb.js', 1],
+    ['assets/auth.js', 1],
+    ['assets/whispers.js', 1],
+    ['assets/questions.js', 1],
+    ['assets/capsules.js', 1]
+  ];
+  for (var i = 0; i < list.length; i++) {
+    document.write('<script src="' + list[i][0] + V + '"' + (list[i][1] ? ' defer' : '') + '><\/script>');
+  }
+})();
+</script>
+</body>
+</html>
