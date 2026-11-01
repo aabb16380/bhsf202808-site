@@ -1,8 +1,8 @@
 /* ============================================================
    八班树洞 · 唯一配置点
    ------------------------------------------------------------
-   和三站共用一个 Supabase 项目：先跑 supabase/schema.sql，
-   再把 Project URL 与 anon public key 填进来。
+   Supabase 项目：zcfdtfmxtsxacsklqlhe（Singapore · free）
+   悄悄话 / 提问 / 胶囊都不开放直读，只能带令牌走 RPC。
    ============================================================ */
 window.B8_CONFIG = {
   site: {
@@ -13,8 +13,8 @@ window.B8_CONFIG = {
   },
 
   supabase: {
-    url: '',
-    anonKey: ''
+    url: 'https://zcfdtfmxtsxacsklqlhe.supabase.co',
+    anonKey: 'sb_publishable_kkJAT4lA9KFJGhua2V9gjw_tr-doaVN'
   },
 
   links: {
