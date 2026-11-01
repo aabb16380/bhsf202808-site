@@ -1409,3 +1409,23 @@ body[data-mode="night"] .whisper {
     transition: none;
   }
 }
+
+/* ---------- 班徽进轨道 ---------- */
+.orbit-logo {
+  width: 112px;
+  height: auto;
+  opacity: 0.9;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.4));
+}
+/* ---------- 超管专用：这条悄悄话是谁发的 ---------- */
+.whisper-from {
+  margin: 10px 0 0;
+  padding: 6px 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 10%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--gold) 55%, transparent);
+  border-radius: 2px;
+}

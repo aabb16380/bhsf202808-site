@@ -29,6 +29,8 @@
   var items = [];
   var isDemo = false;
   var isAdmin = false;
+  var isSuper = false;
+  var senders = {};   // 超管专用：id → {student_no, name}
   var anon = true;
   var submitting = false;
   var pickTimer = 0;
@@ -180,6 +182,15 @@
     }
 
     card.appendChild(foot);
+
+    // 超管：匿名也看得见是谁写的。普通成员这里什么都拿不到。
+    if (isSuper && !isDemo && senders[String(item.id)]) {
+      var who2 = senders[String(item.id)];
+      var from = h('p', 'whisper-from',
+        '超管可见 · ' + (who2.name || '（花名册里没有）') + '（' + (who2.student_no || '—') + '）');
+      from.setAttribute('data-super-only', '1');
+      card.appendChild(from);
+    }
 
     if (item.reply) {
       var reply = h('div', 'reply-block');
@@ -372,6 +383,7 @@
     }).then(function (rows) {
       items = Array.isArray(rows) ? rows : [];
       renderAll();
+      loadSenders();
     }, function (err) {
       clear(list);
       list.setAttribute('aria-busy', 'false');
@@ -380,6 +392,22 @@
       if (statEl) statEl.textContent = '—';
       B8.toast(msg);
     });
+  }
+
+  /**
+   * 超管才有的「这条是谁写的」。
+   * 普通成员连这个 RPC 都调不通（服务端按 super 校验），
+   * 所以作者身份不会从任何地方漏出去。
+   */
+  function loadSenders() {
+    if (!isSuper || isDemo) return;
+    B8.sb.rpc('b8_super_whisper_senders', { p_token: B8.auth.token() })
+      .then(function (rows) {
+        senders = {};
+        (rows || []).forEach(function (r) { senders[String(r.id)] = r; });
+        renderAll();
+      })
+      .catch(function () { /* 超管权限刚好过期就别打扰用户 */ });
   }
 
   function demoData() {
@@ -424,6 +452,7 @@
   function startReal() {
     isDemo = false;
     isAdmin = B8.auth.isAdmin();
+    isSuper = B8.auth.isSuper();
     if (submit) submit.disabled = false;
     var me = B8.auth.nick();
     if (nickEl && me) nickEl.placeholder = '留空就用「' + me + '」';
