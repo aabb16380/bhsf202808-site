@@ -80,6 +80,22 @@
     return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
   }
 
+  /** 默认打开日期：今天 + 10 天 */
+  function defaultOpenDate() {
+    var d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() + 10);
+    return ymd(d);
+  }
+
+  function applyDefaultDate() {
+    if (!dateEl) return;
+    // 用户已经改过就别动
+    if (dateEl.getAttribute('data-touched') === '1') return;
+    dateEl.value = defaultOpenDate();
+    dateEl.min = ymd(new Date());
+  }
+
   // 输入框给的是“哪一天”，不是某个 UTC 时刻；按本地零点解释。
   function parseLocalDate(s) {
     var p = String(s || '').split('-');
@@ -317,11 +333,17 @@
     isDemo = false;
     isAdmin = B8.auth.isAdmin();
     if (submit) submit.disabled = false;
+    applyDefaultDate();
     loadCapsules();
   }
 
   /* ---------- 表单 ---------- */
   B8.on(bodyEl, 'input', syncCount);
+
+  if (dateEl) {
+    B8.on(dateEl, 'change', function () { dateEl.setAttribute('data-touched', '1'); });
+    applyDefaultDate();
+  }
 
   B8.on(form, 'submit', function (e) {
     e.preventDefault();

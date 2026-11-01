@@ -270,6 +270,80 @@
     updateStat();
   }
 
+  /** 抽中的那条直接弹出来（不必展开长列表） */
+  function showPick(item) {
+    var old = document.getElementById('whisper-pick');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+
+    var wrap = document.createElement('div');
+    wrap.id = 'whisper-pick';
+    wrap.className = 'modal';
+    wrap.setAttribute('role', 'dialog');
+    wrap.setAttribute('aria-modal', 'true');
+
+    var inner = document.createElement('div');
+    inner.className = 'modal-inner pick-inner';
+
+    var tag = document.createElement('p');
+    tag.className = 'pick-tag';
+    tag.textContent = '抽到这一条';
+    inner.appendChild(tag);
+
+    var who = document.createElement('p');
+    who.className = 'pick-who';
+    who.textContent = (item.anon ? '匿名' : (item.nick || '匿名')) + ' · ' + B8.ago(item.created_at);
+    inner.appendChild(who);
+
+    var body = document.createElement('p');
+    body.className = 'pick-body';
+    body.textContent = item.body || '';
+    inner.appendChild(body);
+
+    if (item.reply) {
+      var rep = document.createElement('div');
+      rep.className = 'pick-reply';
+      var rh = document.createElement('span');
+      rh.className = 'pick-reply-who';
+      rh.textContent = '回复 · ' + (item.reply_by || '管理员');
+      rep.appendChild(rh);
+      var rb = document.createElement('p');
+      rb.className = 'pick-reply-body';
+      rb.textContent = item.reply;
+      rep.appendChild(rb);
+      inner.appendChild(rep);
+    }
+
+    var foot = document.createElement('div');
+    foot.className = 'modal-actions pick-actions';
+
+    var again = document.createElement('button');
+    again.type = 'button';
+    again.className = 'btn ghost sm';
+    again.textContent = '再抽一条';
+    foot.appendChild(again);
+
+    var close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'btn sm';
+    close.textContent = '收起';
+    foot.appendChild(close);
+
+    inner.appendChild(foot);
+    wrap.appendChild(inner);
+    document.body.appendChild(wrap);
+
+    B8.on(again, 'click', function () {
+      var next = items[Math.floor(Math.random() * items.length)];
+      if (items.length > 1 && next === item) next = items[(items.indexOf(item) + 1) % items.length];
+      if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      showPick(next);
+    });
+
+    function closeIt() { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); }
+    B8.on(close, 'click', closeIt);
+    B8.on(wrap, 'click', function (e) { if (e.target === wrap) closeIt(); });
+    B8.on(document, 'keydown', function (e) { if (e.key === 'Escape') closeIt(); });
+  }
   function findItem(id) {
     for (var i = 0; i < items.length; i++) {
       if (String(items[i].id) === String(id)) return items[i];
@@ -600,13 +674,18 @@
   });
 
   B8.on(randomBtn, 'click', function () {
-    var cards = B8.qsa('.whisper', list);
-    if (!cards.length) {
+    // 从「全部」里抽，不是从当前显示的 3 条里抽
+    if (!items.length) {
       B8.toast('洞里还没有悄悄话');
       return;
     }
+    var pick = items[Math.floor(Math.random() * items.length)];
+    showPick(pick);
+    return;
+
     B8.qsa('.is-picked', list).forEach(function (c) { c.classList.remove('is-picked'); });
-    var card = cards[Math.floor(Math.random() * cards.length)];
+    var card = list.querySelector('[data-id="' + pick.id + '"]');
+    if (!card) return;
     card.classList.add('is-picked');
     var reduce = false;
     try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
