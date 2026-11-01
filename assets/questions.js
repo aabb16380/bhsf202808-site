@@ -31,6 +31,8 @@
   var moreBtn = null;
   var isDemo = false;
   var isAdmin = false;
+  var isSuper = false;
+  var senders = {};   // 超管专用：问题 id -> {name, student_no}
   var anon = true;
   var submitting = false;
 
@@ -196,6 +198,13 @@
     var body = h('p', 'q-body');
     body.textContent = item.body || '';
     card.appendChild(body);
+
+    // 超管：匿名提问也能看见是谁问的
+    if (isSuper && !isDemo && senders[String(item.id)]) {
+      var w2 = senders[String(item.id)];
+      card.appendChild(h('p', 'whisper-from',
+        '超管可见 · ' + (w2.name || '（花名册里没有）') + '（' + (w2.student_no || '—') + '）'));
+    }
 
     // 多人回答：一条一条列出来
     var ansList = answers[String(item.id)] || [];
@@ -415,20 +424,44 @@
   }
 
   /* ---------- 数据 ---------- */
+  function groupAnswers(rows) {
+    answers = {};
+    (rows || []).forEach(function (a) {
+      var k = String(a.question_id);
+      if (!answers[k]) answers[k] = [];
+      answers[k].push(a);
+    });
+  }
+
+  /** 超管才有的「这个匿名问题是谁问的」 */
+  function loadSenders() {
+    if (!isSuper || isDemo) return;
+    B8.sb.rpc('b8_super_question_senders', { p_token: B8.auth.token() })
+      .then(function (rows) {
+        senders = {};
+        (rows || []).forEach(function (r) { senders[String(r.id)] = r; });
+        renderAll();
+      })
+      .catch(function () {});
+  }
+
   function loadQuestions() {
     list.setAttribute('aria-busy', 'true');
-    B8.sb.rpc('b8_question_list', {
-      p_token: B8.auth.token(),
-      p_limit: 80
-    }).then(function (rows) {
-      items = Array.isArray(rows) ? rows : [];
+    Promise.all([
+      B8.sb.rpc('b8_question_list', { p_token: B8.auth.token(), p_limit: 80 }),
+      B8.sb.rpc('b8_answer_list_all', { p_token: B8.auth.token(), p_limit: 500 })
+        .catch(function () { return []; })
+    ]).then(function (all) {
+      items = Array.isArray(all[0]) ? all[0] : [];
+      groupAnswers(all[1]);
       renderAll();
+      loadSenders();
+      if (list) list.classList.toggle('is-scroll', showAll && items.length > 6);
+      updateMore();
+      list.setAttribute('aria-busy', 'false');
     }, function (err) {
       clear(list);
-      // 条数多了就别把页面撑长：超出 6 条改成内部滑动
-    if (list) list.classList.toggle('is-scroll', showAll && items.length > 6);
-    updateMore();
-    list.setAttribute('aria-busy', 'false');
+      list.setAttribute('aria-busy', 'false');
       var msg = errMessage(err);
       list.appendChild(h('p', 'list-error', '问题没读出来：' + msg));
       if (statEl) statEl.textContent = '—';
@@ -477,6 +510,7 @@
   function startReal() {
     isDemo = false;
     isAdmin = B8.auth.isAdmin();
+    isSuper = B8.auth.isSuper();
     if (submit) submit.disabled = false;
     var me = B8.auth.nick();
     if (nickEl && me) nickEl.placeholder = '留空就用「' + me + '」';
@@ -588,9 +622,13 @@
   // 提权（输密钥）之后 isAdmin 才会变 true，必须重画一次，
   // 否则「回答」按钮永远不出现——这就是之前点不了回答的原因。
   document.addEventListener('b8:auth', function () {
-    var was = isAdmin;
+    var was = isAdmin, wasSuper = isSuper;
     isAdmin = B8.auth.isAdmin();
-    if (was !== isAdmin) renderAll();
+    isSuper = B8.auth.isSuper();
+    if (was !== isAdmin || wasSuper !== isSuper) {
+      renderAll();
+      loadSenders();
+    }
   });
   B8.auth.ready(function (st) {
     if (!st || st.kind === 'none') return;
