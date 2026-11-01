@@ -236,6 +236,8 @@
       list.appendChild(frag);
     }
 
+    // 条数多了就别把页面撑长：超出 6 条改成内部滑动
+    if (list) list.classList.toggle('is-scroll', items.length > 6);
     list.setAttribute('aria-busy', 'false');
     updateStat();
   }
@@ -394,7 +396,9 @@
       loadSenders();
     }, function (err) {
       clear(list);
-      list.setAttribute('aria-busy', 'false');
+      // 条数多了就别把页面撑长：超出 6 条改成内部滑动
+    if (list) list.classList.toggle('is-scroll', items.length > 6);
+    list.setAttribute('aria-busy', 'false');
       var msg = errMessage(err);
       list.appendChild(h('p', 'list-error', '悄悄话没读出来：' + msg));
       if (statEl) statEl.textContent = '—';
