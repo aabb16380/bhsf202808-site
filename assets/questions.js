@@ -107,6 +107,10 @@
       btn.setAttribute('aria-pressed', isAnonBtn === anon ? 'true' : 'false');
     });
     if (nickField) nickField.hidden = anon;
+    // 切到「署名」时默认填真名，改了就算非真名
+    if (!anon && nickEl && !nickEl.value && B8.auth && B8.auth.nick()) {
+      nickEl.value = B8.auth.nick();
+    }
     if (!anon && focusNick && nickEl) nickEl.focus();
   }
 
@@ -168,6 +172,9 @@
     var top = h('div', 'q-top');
     var person = h('div', 'q-person');
     person.appendChild(h('span', 'q-nick', item.anon ? '匿名' : (item.nick || '匿名')));
+    if (!item.anon && item.nick_real === false) {
+      person.appendChild(h('span', 'tag plain nick-fake', '非真名'));
+    }
     var time = h('time', 'q-time', B8.ago(item.created_at));
     if (item.created_at) time.setAttribute('datetime', item.created_at);
     person.appendChild(time);

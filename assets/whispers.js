@@ -128,6 +128,10 @@
       btn.setAttribute('aria-pressed', isAnonBtn === anon ? 'true' : 'false');
     });
     if (nickField) nickField.hidden = anon;
+    // 切到「署名」时默认填真名，改了就算非真名
+    if (!anon && nickEl && !nickEl.value && B8.auth && B8.auth.nick()) {
+      nickEl.value = B8.auth.nick();
+    }
     if (!anon && focusNick && nickEl) nickEl.focus();
   }
 
@@ -140,6 +144,10 @@
     var top = h('div', 'whisper-top');
     var who = h('div', 'whisper-who');
     who.appendChild(h('span', 'whisper-nick', item.anon ? '匿名' : (item.nick || '匿名')));
+    // 署名不是真名的，挂个标让人一眼看出来
+    if (!item.anon && item.nick_real === false) {
+      who.appendChild(h('span', 'tag plain nick-fake', '非真名'));
+    }
 
     var time = h('time', 'whisper-time', B8.ago(item.created_at));
     if (item.created_at) time.setAttribute('datetime', item.created_at);
