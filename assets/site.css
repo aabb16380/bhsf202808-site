@@ -1514,3 +1514,44 @@ body[data-mode="night"] .whisper {
   .whisper-list.is-scroll,
   .q-list.is-scroll { max-height: 58vh; }
 }
+/* ---------- 提问箱：多人回答 ---------- */
+.q-answers {
+  margin-top: 12px;
+  display: grid;
+  gap: 0;
+}
+
+.q-answer + .q-answer {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+
+.q-answer-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.q-answer-time {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+
+.q-answer-like {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.q-answer-body {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

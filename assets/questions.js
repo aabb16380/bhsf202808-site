@@ -25,6 +25,7 @@
   if (!list || !form) return;
 
   var items = [];
+  var answers = {};      // question_id -> [回答...]
   var isDemo = false;
   var isAdmin = false;
   var anon = true;
@@ -70,7 +71,7 @@
   }
 
   function isAnswered(item) {
-    return !!(item && item.answer && String(item.answer).replace(/\s/g, '') !== '');
+    return !!(item && (answers[String(item.id)] || []).length);
   }
 
   function sortItems(arr) {
@@ -193,16 +194,12 @@
     body.textContent = item.body || '';
     card.appendChild(body);
 
-    if (answered) {
-      var answer = h('div', 'q-answer');
-      var head = h('div', 'q-answer-head');
-      head.appendChild(h('span', 'q-answer-who', '回答 · ' + (item.answered_by || '管理员')));
-      if (item.answered_at) head.appendChild(h('span', '', B8.ago(item.answered_at)));
-      answer.appendChild(head);
-      var answerBody = h('p', 'q-answer-body');
-      answerBody.textContent = item.answer;
-      answer.appendChild(answerBody);
-      card.appendChild(answer);
+    // 多人回答：一条一条列出来
+    var ansList = answers[String(item.id)] || [];
+    if (ansList.length) {
+      var ansWrap = h('div', 'q-answers');
+      for (var ai = 0; ai < ansList.length; ai++) ansWrap.appendChild(answerNode(ansList[ai]));
+      card.appendChild(ansWrap);
     }
 
     var actions = h('div', 'q-actions');
@@ -210,16 +207,74 @@
     actions.appendChild(reactBtn('same', item, '已同问', '同问', 'is-same'));
     if (answered) actions.appendChild(reactBtn('answer', item, '有用 ♥', '有用'));
     card.appendChild(actions);
-    if (isAdmin) {
+    if (!isDemo) {
       var foot = h('div', 'q-foot');
       var acts = h('div', 'admin-actions');
-      acts.appendChild(miniAct(answered ? '改回答' : '回答', 'answer'));
-      acts.appendChild(miniAct('隐藏', 'hide', 'is-danger'));
+      acts.appendChild(miniAct('我也来答', 'answer'));
+      if (isAdmin) acts.appendChild(miniAct('隐藏', 'hide', 'is-danger'));
       foot.appendChild(acts);
       card.appendChild(foot);
     }
 
     return card;
+  }
+
+  function canRemove(a) {
+    return isAdmin || !!a.mine;
+  }
+
+  /** 一条回答 */
+  function answerNode(a) {
+    var box = h('div', 'q-answer');
+    var head = h('div', 'q-answer-head');
+
+    head.appendChild(h('span', 'q-answer-who', a.nick || '同学'));
+    if (a.created_at) head.appendChild(h('span', 'q-answer-time', B8.ago(a.created_at)));
+
+    var like = h('button', 'mini-act q-answer-like');
+    like.type = 'button';
+    like.setAttribute('data-act', 'alike');
+    like.setAttribute('data-id', String(a.id));
+    like.textContent = '有用 ' + B8.num(a.likes || 0);
+    head.appendChild(like);
+
+    if (canRemove(a)) {
+      var del = h('span', 'mini-act is-danger');
+      del.setAttribute('role', 'button');
+      del.setAttribute('tabindex', '0');
+      del.setAttribute('data-act', 'adel');
+      del.setAttribute('data-id', String(a.id));
+      del.textContent = '删除';
+      head.appendChild(del);
+    }
+
+    box.appendChild(head);
+
+    var body = h('p', 'q-answer-body');
+    body.textContent = a.body || '';
+    box.appendChild(body);
+    return box;
+  }
+
+  function likeAnswer(el, id) {
+    if (!id || el.disabled) return;
+    el.disabled = true;
+    B8.sb.rpc('b8_answer_like', { p_token: B8.auth.token(), p_id: id })
+      .then(function (n) {
+        el.textContent = '有用 ' + B8.num(n == null ? 0 : n);
+      }, function (err) {
+        el.disabled = false;
+        B8.toast(errMessage(err));
+      });
+  }
+
+  function removeAnswer(el, id) {
+    if (!id) return;
+    if (!window.confirm('删掉这条回答？')) return;
+    el.textContent = '删除中…';
+    B8.sb.rpc('b8_answer_del', { p_token: B8.auth.token(), p_id: id })
+      .then(function () { loadQuestions(); B8.toast('已删除'); },
+            function (err) { el.textContent = '删除'; B8.toast(errMessage(err)); });
   }
 
   function findItem(id) {
@@ -259,8 +314,8 @@
     var ta = h('textarea', 'textarea');
     ta.maxLength = 1500;
     ta.rows = 4;
-    ta.placeholder = '写在这个框里，保存后会显示在问题下面';
-    ta.value = item.answer || '';
+    ta.placeholder = '写下你知道的答案，会追加在问题下面（谁都能答）';
+    ta.value = '';
     box.appendChild(ta);
 
     var foot = h('div', 'admin-editor-foot');
@@ -295,16 +350,14 @@
       status.className = 'form-status';
       status.textContent = '';
 
-      B8.sb.rpc('b8_question_answer', {
+      B8.sb.rpc('b8_answer_add', {
         p_token: B8.auth.token(),
-        p_id: item.id,
-        p_answer: text
+        p_qid: item.id,
+        p_body: text
       }).then(function () {
-        item.answer = text;
-        item.answered_by = B8.auth.nick() || '管理员';
-        item.answered_at = new Date().toISOString();
-        renderAll();
-        B8.toast('回答已保存');
+        if (box.parentNode) box.parentNode.removeChild(box);
+        loadQuestions();
+        B8.toast('回答已发上去');
       }, function (err) {
         save.disabled = false;
         save.textContent = '保存回答';
@@ -482,8 +535,13 @@
     var item = findItem(card.getAttribute('data-id'));
     if (!item) return;
 
-    if (actionEl.getAttribute('data-act') === 'answer') openAnswerEditor(card, item);
-    else if (actionEl.getAttribute('data-act') === 'hide') hideQuestion(card, item);
+    var act = actionEl.getAttribute('data-act');
+    var aid = Number(actionEl.getAttribute('data-id') || 0);
+
+    if (act === 'answer') openAnswerEditor(card, item);
+    else if (act === 'hide') hideQuestion(card, item);
+    else if (act === 'alike') likeAnswer(actionEl, aid);
+    else if (act === 'adel') removeAnswer(actionEl, aid);
   });
 
   B8.on(list, 'keydown', function (e) {
