@@ -1489,7 +1489,8 @@ body[data-mode="night"] .whisper {
 /* ---------- 悄悄话 / 提问：多了就在框里滑 ---------- */
 .whisper-list.is-scroll,
 .q-list.is-scroll {
-  max-height: 64vh;
+  max-height: calc(100vh - 200px);
+  min-height: 340px;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -1510,10 +1511,7 @@ body[data-mode="night"] .whisper {
   border-radius: 3px;
 }
 
-@media (max-width: 860px) {
-  .whisper-list.is-scroll,
-  .q-list.is-scroll { max-height: 58vh; }
-}
+
 /* ---------- 提问箱：多人回答 ---------- */
 .q-answers {
   margin-top: 12px;
@@ -1636,9 +1634,15 @@ body[data-mode="night"] .whisper {
 }
 /* 展开后的悄悄话 / 提问也装进框里滑 */
 .whisper-list.is-scroll,
-.q-list.is-scroll { max-height: 68vh; }
+.q-list.is-scroll {
+  max-height: calc(100vh - 180px);
+  min-height: 360px;
+}
 
 @media (max-width: 860px) {
   .whisper-list.is-scroll,
-  .q-list.is-scroll { max-height: 62vh; }
+  .q-list.is-scroll {
+    max-height: calc(100dvh - 150px);
+    min-height: 300px;
+  }
 }
