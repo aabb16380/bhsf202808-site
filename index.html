@@ -16,8 +16,8 @@
 <meta property="og:url" content="https://bhsf202808.site/">
 <meta property="og:locale" content="zh_CN">
 
-<link rel="icon" href="assets/favicon.png?v=20261101c7" type="image/png">
-<link rel="apple-touch-icon" href="assets/icon.png?v=20261101c7">
+<link rel="icon" href="assets/favicon.png?v=20261101c8" type="image/png">
+<link rel="apple-touch-icon" href="assets/icon.png?v=20261101c8">
 <script>
 // 在样式表之前定下夜色/日间，避免先刷出一帧错误的底色。
 // localStorage 可能被禁，失败就按默认的夜色来。
@@ -27,14 +27,14 @@
   document.documentElement.setAttribute('data-mode', mode);
   window.B8_MODE = mode;
 })();
-window.B8_BUILD = '20261101c7';
+window.B8_BUILD = '20261101c8';
 // ?t=<时间戳> 透传给每个资源，配合 /test/ 入口绕过 GitHub Pages 的缓存
 window.B8_T = (function () {
   var m = (location.search || '').match(/[?&]t=([^&]+)/);
   return m ? '&t=' + encodeURIComponent(m[1]) : '';
 })();
 window.B8_TEST = !!window.B8_T;
-document.write('<link rel="stylesheet" href="assets/styles.css?v=20261101c7' + window.B8_T + '">');
+document.write('<link rel="stylesheet" href="assets/styles.css?v=20261101c8' + window.B8_T + '">');
 </script>
 <style>
   /* 样式表到达前只给画布上底色，杜绝白闪 */
@@ -55,7 +55,7 @@ document.body.setAttribute('data-mode', window.B8_MODE || 'night');
 <header class="site-header" id="site-header">
   <div class="wrap header-inner">
     <a class="brand" href="#top" aria-label="八班树洞 · 回到顶部">
-      <img class="brand-mark" src="assets/icon.png?v=20261101c7" alt="" width="30" height="30">
+      <img class="brand-mark" src="assets/icon.png?v=20261101c8" alt="" width="30" height="30">
       <span class="brand-text">
         <span class="brand-name">八班树洞</span>
         <span class="brand-ver" id="brand-ver">v1.0</span>
@@ -80,6 +80,8 @@ document.body.setAttribute('data-mode', window.B8_MODE || 'night');
         <button class="icon-btn more-btn" id="more-menu-btn" type="button" aria-haspopup="true"
                 aria-expanded="false" aria-label="更多">⋯</button>
         <div class="more-menu" id="more-menu" hidden>
+          <button type="button" id="mode-menu">切换到日间</button>
+          <span class="menu-sep"></span>
           <a href="//bhsf202808.homes/">八班纪事 ↗</a>
           <a href="//bhsf202808.fun/">八班游乐场 ↗</a>
           <span class="menu-sep"></span>
@@ -102,7 +104,7 @@ document.body.setAttribute('data-mode', window.B8_MODE || 'night');
      放在 #main 外面，免得被未登录时的模糊样式一起糊掉。 -->
 <div class="gate" id="gate" hidden>
   <div class="gate-card">
-    <img class="gate-logo" src="assets/logo.png?v=20261101c7" alt="" aria-hidden="true" width="84" height="68">
+    <img class="gate-logo" src="assets/logo.png?v=20261101c8" alt="" aria-hidden="true" width="84" height="68">
     <h2>八班树洞</h2>
     <p class="gate-sub">树洞只对八班开放。用学号登录，第一次进来给自己设个密码。</p>
     <form id="gate-form" novalidate>
@@ -160,7 +162,7 @@ document.body.setAttribute('data-mode', window.B8_MODE || 'night');
       <div class="hero-aside" aria-hidden="true">
         <div class="hero-orbit">
           <span class="hero-orbit-dot"></span>
-          <img class="orbit-logo" src="assets/logo.png?v=20261101c7" alt="" width="180" height="144">
+          <img class="orbit-logo" src="assets/logo.png?v=20261101c8" alt="" width="180" height="144">
         </div>
         <span class="hero-aside-meta">BHSF · CLASS 08 · 2028</span>
       </div>
@@ -389,11 +391,21 @@ document.body.setAttribute('data-mode', window.B8_MODE || 'night');
 
   applyMode(window.B8_MODE || body.getAttribute('data-mode'), false);
 
-  if (toggle) {
-    toggle.addEventListener('click', function () {
-      applyMode(body.getAttribute('data-mode') === 'night' ? 'day' : 'night', true);
-    });
+  function flipMode() {
+    applyMode(body.getAttribute('data-mode') === 'night' ? 'day' : 'night', true);
+    syncModeMenu();
   }
+
+  if (toggle) toggle.addEventListener('click', flipMode);
+
+  // 手机上把「日/夜」收进 ⋯ 菜单，这里同步一下文案
+  var modeMenuItem = document.getElementById('mode-menu');
+  function syncModeMenu() {
+    if (!modeMenuItem) return;
+    modeMenuItem.textContent = body.getAttribute('data-mode') === 'night' ? '切换到日间' : '切换到夜色';
+  }
+  if (modeMenuItem) modeMenuItem.addEventListener('click', flipMode);
+  syncModeMenu();
 
   function unlockShell() {
     var main = document.getElementById('main');
@@ -425,7 +437,7 @@ document.body.setAttribute('data-mode', window.B8_MODE || 'night');
 <script>
 (function () {
   var T = window.B8_T || '';
-  var V = '?v=20261101c7' + T;
+  var V = '?v=20261101c8' + T;
   var list = [
     ['assets/site-config.js', 0],
     ['assets/main.js', 1],

@@ -1560,3 +1560,7 @@ body[data-mode="night"] .whisper {
   display: block;
   margin: 16px 0 0;
 }
+/* 手机上「日/夜」收进 ⋯ 菜单，省地方 */
+@media (max-width: 860px) {
+  body[data-site="site"] .mode-btn { display: none; }
+}
