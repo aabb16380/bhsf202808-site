@@ -93,6 +93,9 @@
     if (!bodyEl || !countEl) return;
     var n = bodyEl.value.length;
     countEl.textContent = String(n);
+    // 按钮的可用状态跟着输入走：以前只在 startReal 里放开一次，
+    // 万一那一步没跑（比如没登录/脚本顺序变了），按钮就永远是灰的，点了没反应。
+    if (submit) submit.disabled = isDemo || n < 2;
     var wrap = countEl.parentNode;
     if (wrap) {
       if (n >= 900) wrap.classList.add('near');
