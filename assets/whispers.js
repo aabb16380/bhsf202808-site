@@ -264,7 +264,7 @@
     }
 
     // 条数多了就别把页面撑长：超出 6 条改成内部滑动
-    if (list) list.classList.toggle('is-scroll', showAll && items.length > 6);
+    if (list) list.classList.toggle('is-scroll', showAll && items.length > LIST_LIMIT);
     updateMore();
     list.setAttribute('aria-busy', 'false');
     updateStat();
@@ -499,7 +499,7 @@
     }, function (err) {
       clear(list);
       // 条数多了就别把页面撑长：超出 6 条改成内部滑动
-    if (list) list.classList.toggle('is-scroll', showAll && items.length > 6);
+    if (list) list.classList.toggle('is-scroll', showAll && items.length > LIST_LIMIT);
     updateMore();
     list.setAttribute('aria-busy', 'false');
       var msg = errMessage(err);

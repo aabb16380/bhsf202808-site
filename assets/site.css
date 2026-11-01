@@ -1634,3 +1634,11 @@ body[data-mode="night"] .whisper {
   justify-content: flex-end;
   margin-top: 22px;
 }
+/* 展开后的悄悄话 / 提问也装进框里滑 */
+.whisper-list.is-scroll,
+.q-list.is-scroll { max-height: 68vh; }
+
+@media (max-width: 860px) {
+  .whisper-list.is-scroll,
+  .q-list.is-scroll { max-height: 62vh; }
+}
