@@ -240,7 +240,7 @@
     var box = h('div', 'q-answer');
     var head = h('div', 'q-answer-head');
 
-    head.appendChild(h('span', 'q-answer-who', a.nick || '同学'));
+    head.appendChild(h('span', 'q-answer-who', a.anon ? '匿名' : (a.nick || '同学')));
     if (a.created_at) head.appendChild(h('span', 'q-answer-time', B8.ago(a.created_at)));
 
     var like = h('button', 'mini-act q-answer-like');
@@ -348,12 +348,55 @@
     }
 
     var box = h('form', 'answer-editor admin-editor');
+
+    // 匿名 / 署名切换
+    var aAnon = false;
+    var modeRow = h('div', 'seg seg-sm');
+    var btnAnon = h('button', 'seg-btn', '匿名');
+    btnAnon.type = 'button';
+    btnAnon.setAttribute('data-a-anon', 'true');
+    btnAnon.setAttribute('aria-pressed', 'true');
+    var btnName = h('button', 'seg-btn', '署名');
+    btnName.type = 'button';
+    btnName.setAttribute('data-a-anon', 'false');
+    btnName.setAttribute('aria-pressed', 'false');
+    modeRow.appendChild(btnAnon);
+    modeRow.appendChild(btnName);
+    box.appendChild(modeRow);
+
+    var nickField = h('div', 'field');
+    var nickLabel = h('label', '', '署名');
+    var nickInput = h('input', 'input');
+    nickInput.type = 'text';
+    nickInput.maxLength = 16;
+    nickInput.value = B8.auth.nick() || '';
+    nickInput.placeholder = '默认用你的真名';
+    nickField.appendChild(nickLabel);
+    nickField.appendChild(nickInput);
+    nickField.hidden = true;
+    box.appendChild(nickField);
+
     var ta = h('textarea', 'textarea');
-    ta.maxLength = 1500;
+    ta.maxLength = 1000;
     ta.rows = 4;
     ta.placeholder = '写下你知道的答案，会追加在问题下面（谁都能答）';
     ta.value = '';
     box.appendChild(ta);
+
+    function setAAnon(next) {
+      aAnon = !!next;
+      B8.qsa('.seg-btn', modeRow).forEach(function (b) {
+        var isAnon = b.getAttribute('data-a-anon') === 'true';
+        b.setAttribute('aria-pressed', isAnon === aAnon ? 'true' : 'false');
+      });
+      nickField.hidden = aAnon;
+    }
+    B8.on(modeRow, 'click', function (ev) {
+      var b = closest(ev.target, '.seg-btn');
+      if (!b) return;
+      setAAnon(b.getAttribute('data-a-anon') === 'true');
+    });
+    setAAnon(false);
 
     var foot = h('div', 'admin-editor-foot');
     var save = h('button', 'btn seal sm', '保存回答');
@@ -390,7 +433,9 @@
       B8.sb.rpc('b8_answer_add', {
         p_token: B8.auth.token(),
         p_qid: item.id,
-        p_body: text
+        p_body: text,
+        p_nick: aAnon ? '' : B8.trim(nickInput.value, 16),
+        p_anon: aAnon
       }).then(function () {
         if (box.parentNode) box.parentNode.removeChild(box);
         loadQuestions();

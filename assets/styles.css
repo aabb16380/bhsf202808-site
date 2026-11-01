@@ -2835,3 +2835,21 @@ body[data-mode="night"] .whisper {
 @media (max-width: 860px) {
   body[data-site="site"] .mode-btn { display: none; }
 }
+/* 回答编辑器里的小号分段按钮 */
+.seg-sm { display: inline-flex; gap: 4px; margin-bottom: 10px; }
+.seg-sm .seg-btn {
+  padding: 5px 12px;
+  font-size: 12.5px;
+  border: 1px solid var(--line-2);
+  background: transparent;
+  border-radius: 999px;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.seg-sm .seg-btn[aria-pressed="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.answer-editor .field { margin-bottom: 10px; text-align: left; }
+.answer-editor .field label { display: block; margin-bottom: 4px; }
