@@ -9,7 +9,7 @@ window.B8_CONFIG = {
     name: '八班树洞',
     domain: 'bhsf202808.site',
     github: 'aabb16380',
-    version: 'v1.0'
+    version: 'v2.0'
   },
 
   supabase: {
