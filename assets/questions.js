@@ -282,11 +282,15 @@
 
   function removeAnswer(el, id) {
     if (!id) return;
-    if (!window.confirm('删掉这条回答？')) return;
-    el.textContent = '删除中…';
-    B8.sb.rpc('b8_answer_del', { p_token: B8.auth.token(), p_id: id })
-      .then(function () { loadQuestions(); B8.toast('已删除'); },
-            function (err) { el.textContent = '删除'; B8.toast(errMessage(err)); });
+    B8.confirm('删掉这条回答？', {
+      title: '删除回答', okText: '删除', danger: true
+    }).then(function (ok) {
+      if (!ok) return;
+      el.textContent = '删除中…';
+      B8.sb.rpc('b8_answer_del', { p_token: B8.auth.token(), p_id: id })
+        .then(function () { loadQuestions(); B8.toast('已删除'); },
+              function (err) { el.textContent = '删除'; B8.toast(errMessage(err)); });
+    });
   }
 
   function findItem(id) {
@@ -452,19 +456,23 @@
   }
 
   function hideQuestion(card, item) {
-    if (!window.confirm('隐藏之后，这个问题就不会再出现在箱子里。确定吗？')) return;
-    card.setAttribute('data-busy', '1');
-    B8.sb.rpc('b8_question_hide', {
-      p_token: B8.auth.token(),
-      p_id: item.id,
-      p_hidden: true
-    }).then(function () {
-      items = items.filter(function (x) { return String(x.id) !== String(item.id); });
-      renderAll();
-      B8.toast('已隐藏');
-    }, function (err) {
-      card.removeAttribute('data-busy');
-      fail(err);
+    B8.confirm('隐藏之后，这个问题就不会再出现在箱子里。确定吗？', {
+      title: '隐藏问题', okText: '隐藏', danger: true
+    }).then(function (ok) {
+      if (!ok) return;
+      card.setAttribute('data-busy', '1');
+      B8.sb.rpc('b8_question_hide', {
+        p_token: B8.auth.token(),
+        p_id: item.id,
+        p_hidden: true
+      }).then(function () {
+        items = items.filter(function (x) { return String(x.id) !== String(item.id); });
+        renderAll();
+        B8.toast('已隐藏');
+      }, function (err) {
+        card.removeAttribute('data-busy');
+        fail(err);
+      });
     });
   }
 

@@ -445,20 +445,24 @@
   }
 
   function hideWhisper(card, item) {
-    if (!window.confirm('隐藏之后，这条悄悄话就不会再出现在洞里。确定吗？')) return;
-    card.setAttribute('data-busy', '1');
-    B8.sb.rpc('b8_whisper_post_admin', {
-      p_token: B8.auth.token(),
-      p_id: item.id,
-      p_action: 'hide',
-      p_text: ''
-    }).then(function () {
-      items = items.filter(function (x) { return String(x.id) !== String(item.id); });
-      renderAll();
-      B8.toast('已隐藏');
-    }, function (err) {
-      card.removeAttribute('data-busy');
-      fail(err);
+    B8.confirm('隐藏之后，这条悄悄话就不会再出现在洞里。确定吗？', {
+      title: '隐藏悄悄话', okText: '隐藏', danger: true
+    }).then(function (ok) {
+      if (!ok) return;
+      card.setAttribute('data-busy', '1');
+      B8.sb.rpc('b8_whisper_post_admin', {
+        p_token: B8.auth.token(),
+        p_id: item.id,
+        p_action: 'hide',
+        p_text: ''
+      }).then(function () {
+        items = items.filter(function (x) { return String(x.id) !== String(item.id); });
+        renderAll();
+        B8.toast('已隐藏');
+      }, function (err) {
+        card.removeAttribute('data-busy');
+        fail(err);
+      });
     });
   }
 

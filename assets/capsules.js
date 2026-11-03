@@ -246,18 +246,22 @@
 
   /* ---------- 管理员 ---------- */
   function hideCapsule(card, item) {
-    if (!window.confirm('隐藏之后，这封胶囊就不会再出现在墙上。确定吗？')) return;
-    card.setAttribute('data-busy', '1');
-    B8.sb.rpc('b8_capsule_hide', {
-      p_token: B8.auth.token(),
-      p_id: item.id
-    }).then(function () {
-      items = items.filter(function (x) { return String(x.id) !== String(item.id); });
-      renderAll();
-      B8.toast('已隐藏');
-    }, function (err) {
-      card.removeAttribute('data-busy');
-      fail(err);
+    B8.confirm('隐藏之后，这封胶囊就不会再出现在墙上。确定吗？', {
+      title: '隐藏胶囊', okText: '隐藏', danger: true
+    }).then(function (ok) {
+      if (!ok) return;
+      card.setAttribute('data-busy', '1');
+      B8.sb.rpc('b8_capsule_hide', {
+        p_token: B8.auth.token(),
+        p_id: item.id
+      }).then(function () {
+        items = items.filter(function (x) { return String(x.id) !== String(item.id); });
+        renderAll();
+        B8.toast('已隐藏');
+      }, function (err) {
+        card.removeAttribute('data-busy');
+        fail(err);
+      });
     });
   }
 
