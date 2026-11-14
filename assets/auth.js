@@ -134,6 +134,36 @@
     }).catch(function () {});
   }
 
+  // 没登录也算一次「上线」：让服务器记 IP（浏览器拿不到自己的公网 IP）。
+  // 同一个页面 30 分钟内只报一次，刷新不会刷满控制台。
+  function pingAnonVisit() {
+    if (state.member && state.member.token) return;
+    var cfg = window.B8_CONFIG || {};
+    var base = cfg.engineApi || (cfg.ai && cfg.ai.api) || 'https://api.bhsf202808.fun';
+    var path = '';
+    try { path = location.host + location.pathname; } catch (e) { return; }
+    if (!path) return;
+    var key = 'b8.hit:' + path;
+    try {
+      var last = Number(sessionStorage.getItem(key) || 0);
+      if (last && Date.now() - last < 30 * 60 * 1000) return;
+      sessionStorage.setItem(key, String(Date.now()));
+    } catch (e) {}
+    var body = JSON.stringify({ path: path });
+    try {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(base + '/hit', new Blob([body], { type: 'text/plain;charset=UTF-8' }));
+      } else if (window.fetch) {
+        fetch(base + '/hit', {
+          method: 'POST',
+          body: body,
+          headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+          keepalive: true
+        }).catch(function () {});
+      }
+    } catch (e) {}
+  }
+
   function settle() {
     if (resolved) return;
     resolved = true;
@@ -908,12 +938,14 @@
       } else {
         hideSplash();
         initGate();
+        pingAnonVisit();
       }
       return null;
     }).catch(function (err) {
       if (window.console) console.warn('[auth] 启动失败：', err && err.message);
       hideSplash();
       initGate();
+      pingAnonVisit();
     });
   }
 

@@ -655,14 +655,17 @@
       return;
     }
 
-    // 先按时间正序，同一个人 30 分钟内连续打开合并成一组；组按最新时间倒序。
+    // 先按时间正序，同一人 30 分钟内连续打开合并成一组；组按最新时间倒序。
     var items = visits.map(function (v) {
       var d = visitDate(v.opened_at);
       var p = String(v.path || '首页');
       var m = /^\[([^\]]+)\]\s*(.*)$/.exec(p);
+      var anon = !v.member_no;
       return {
         member_no: v.member_no,
-        name: v.name || v.member_no,
+        name: anon ? '未登录访客' : (v.name || v.member_no),
+        ip: String(v.ip || ''),
+        anon: anon,
         path: p,
         action: m ? m[1] : '',
         detail: m ? m[2] : p,
@@ -674,7 +677,7 @@
     var groups = [];
     var last = {};
     items.forEach(function (v) {
-      var key = v.member_no || v.name;
+      var key = v.anon ? ('ip:' + v.ip) : v.member_no;
       var g = last[key];
       if (g && v.at - g.end <= 30 * 60 * 1000) {
         g.end = v.at;
@@ -683,6 +686,8 @@
         g = {
           member_no: v.member_no,
           name: v.name,
+          ip: v.ip,
+          anon: v.anon,
           start: v.at,
           end: v.at,
           items: [v]
@@ -693,8 +698,10 @@
     });
     groups.sort(function (a, b) { return b.end - a.end; });
 
-    var html = '<p class="form-note">同一人 30 分钟内连续记录合并成一组；点开可看每次。共 ' +
-      items.length + ' 条记录。</p><div class="console-list">';
+    var anonCount = items.filter(function (v) { return v.anon; }).length;
+    var html = '<p class="form-note">同一人 / 同一 IP 30 分钟内连续记录合并成一组；点开可看每次。' +
+      '共 ' + items.length + ' 条记录（未登录 ' + anonCount + ' 条，按 IP 记录）。</p>' +
+      '<div class="console-list">';
 
     groups.forEach(function (g) {
       var sd = new Date(g.start);
@@ -712,7 +719,9 @@
       html += '<details class="visit-group">' +
         '<summary class="visit-summary">' +
           '<span class="visit-who">' + esc(g.name) +
-            ' <span class="console-dim">' + esc(g.member_no) + '</span></span>' +
+            ' <span class="console-dim">' +
+              esc(g.anon ? ('IP ' + (g.ip || '未知')) : g.member_no) +
+            '</span></span>' +
           '<span class="visit-when">' + esc(range) + ' · ' + g.items.length + ' 次</span>' +
         '</summary>' +
         '<div class="visit-items">';
