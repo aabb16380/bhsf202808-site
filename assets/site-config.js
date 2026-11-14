@@ -9,12 +9,15 @@ window.B8_CONFIG = {
     name: '八班树洞',
     domain: 'bhsf202808.site',
     github: 'aabb16380',
-    version: 'v2.49'
+    version: 'v2.50'
   },
 
   supabase: {
     url: 'https://zcfdtfmxtsxacsklqlhe.supabase.co',
-    anonKey: 'sb_publishable_kkJAT4lA9KFJGhua2V9gjw_tr-doaVN'
+    anonKey: 'sb_publishable_kkJAT4lA9KFJGhua2V9gjw_tr-doaVN',
+    // 国内直连 supabase.co（Cloudflare）经常连不上，手机（尤其 iPhone Safari）
+    // 表现就是登录门「网络不通」；API 走首尔服务器的反代，坏了自动回退直连。
+    proxy: 'https://api.bhsf202808.fun/sb'
   },
 
   links: {

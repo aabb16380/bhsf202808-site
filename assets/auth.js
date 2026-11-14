@@ -707,7 +707,8 @@
     btn.id = 'acct-btn';
     btn.type = 'button';
     btn.textContent = btnLabel();
-    host.insertBefore(btn, host.firstChild);
+    // 姓名放最右上角：追加到工具区最后
+    host.appendChild(btn);
     B8.on(btn, 'click', openPanel);
   }
 
