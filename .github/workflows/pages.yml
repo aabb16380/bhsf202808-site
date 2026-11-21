@@ -29,10 +29,22 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      # 2026-11-21：不再把仓库根目录整个发布。README / .github / supabase / scripts
+      # 以前都能从 Pages 直接下载（渗透测试 P1-4）。
+      - name: Build static artifact
+        run: |
+          mkdir -p _dist
+          rsync -a --delete \
+            --exclude '.git' --exclude '.github' --exclude '_dist' \
+            --exclude 'README.md' --exclude 'readme.md' \
+            --exclude 'supabase' --exclude 'scripts' --exclude 'keys' \
+            --exclude '.secrets' --exclude 'node_modules' \
+            ./ _dist/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _dist
 
       - name: Deploy
         id: deployment
